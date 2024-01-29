@@ -1,0 +1,185 @@
+import os
+import numpy as np
+import pandas as pd
+from util import *
+from opt_file_parser import OptFileParser
+from scipy.stats import zscore
+from collections import defaultdict
+
+
+class OptEventAvg(OptFileParser):
+    def __init__(self, input_path):
+        super().__init__(input_path)
+        self.frame = []
+        self.stat = {}
+        self.target_events = []
+        self.config_exists = False
+        self.config_path = "config.txt"
+
+    def read_config(self):
+        try:
+            with open(self.config_path, 'r') as file:
+                # 如果文件存在，读取文件内存
+                self.config_exists = True
+                for line in file:
+                    line = line.strip()
+                    self.target_events.append(line)
+        except FileNotFoundError:
+            # 文件不存在
+            self.config_exists = False
+
+    def get_frames(self):
+        """"存储每帧中的所有事件"""
+        print(f"Frame Count: {self.cpu_frame_count}")
+        for frame_index in range(len(self.frame_events)):
+            temp = {
+                'frame_index': frame_index,
+                'frame_events': []
+            }
+            for event in self.frame_events[frame_index]:
+                event_elapse = get_round_time(event[1] - event[0])
+                event_index = event[2]
+                temp['frame_events'].append([event_index, event[0], event[1]])
+            self.frame.append(temp)
+            # print(temp)
+
+    def merge_elapse(self):
+        """合并同一帧中相同事件的耗时"""
+        for frame in self.frame:
+            events_intervals = defaultdict(list)
+            merged_frame = []
+
+            # 按事件id，把同属所有区间进行集合
+            for event_index, event_start, event_end in frame['frame_events']:
+                events_intervals[event_index].append((event_start, event_end))
+
+            # 按照区间起始时间进行排序并计算总时长
+            for event_index, intervals in events_intervals.items():
+                sorted_intervals = sorted(intervals, key=lambda x: x[0])
+                total_elapse = 0
+                start_interval, end_interval = sorted_intervals[0]
+                for current_start, current_end in sorted_intervals[1:]:
+                    if current_start > end_interval:
+                        # 区间断开，将前一个连接区间进行累加
+                        total_elapse += end_interval - start_interval
+                        start_interval = current_start
+                    end_interval = max(end_interval, current_end)
+                # 把最后一个区间进行累加
+                total_elapse += end_interval - start_interval
+                merged_frame.append([event_index, total_elapse])
+
+            # update
+            frame['frame_events'] = merged_frame
+            # print(frame)
+
+    def stat_data(self):
+        """计算平均耗时"""
+        frame_events_name = {}
+        frame_events_elapse = defaultdict(list)
+
+        # 每个函数名对应一个列表
+        for i in range(len(self.event_descs)):
+            frame_events_name[i] = self.event_descs[i].split('(')[0]
+
+        # 提取每帧每事件的耗时
+        for frame in self.frame:
+            for event_index, total_elapse in frame['frame_events']:  # 事件下标
+                frame_events_elapse[event_index].append(total_elapse)
+                # if total_elapse > 10000:  # 排除0.01ms以下的
+                #     frame_events_elapse[event_index].append(total_elapse)  # event[0]:event_key  event[1]:total_duration
+
+        # 计算每事件的平均耗时
+        for event_index, event_elapse in frame_events_elapse.items():
+            data_array = np.array(event_elapse, dtype=np.int64)
+            if not len(data_array):
+                # 如果该事件未发生
+                pass
+            else:
+                # 事件平均耗时(总耗时/帧数)
+                avg_event_elapse = np.sum(data_array) / len(self.frame_events)
+                avg_event_elapse = round(avg_event_elapse / 1000000, 3)
+                # 最大最小方差标准差
+                max_event_elapse = round(np.max(data_array) / 1000000, 3)
+                var_event_elapse = round(np.var(data_array) / 1000000 / 1000000, 3)
+
+                # z_scores
+                z_scores = zscore(data_array)
+                threshold = 7  # 可根据情况适当修改
+                outliers = np.where(np.abs(z_scores) > threshold)
+
+                # outlier 存在离群值，或方差远大于平均数
+                is_outlier = (len(outliers[0]) > 0 or var_event_elapse > (avg_event_elapse * 100))
+                self.stat[event_index] = (
+                    frame_events_name[event_index], avg_event_elapse, is_outlier, outliers[0], len(outliers[0]), max_event_elapse, var_event_elapse)
+                # print(z_scores)
+
+    def write_data(self, data_writer):
+        """把config标记的函数的提取出来"""
+        if self.config_exists:
+            for event_index, stat in self.stat.items():
+                if stat[1] > 0 and stat[0] in self.target_events:  # avg_event_elapse > 0 且 event_name 存在 target_events
+                    data_writer.append(stat)
+            for event in self.target_events:
+                if event not in data_writer:
+                    data_writer.append((event, 0))
+            # 排序data_writer 根据target.txt的顺序进行排序
+            data_writer.sort(key=lambda x: self.target_events.index(x[0]))
+        else:
+            for event_index, stat in self.stat.items():
+                if stat[1] > 0:
+                    data_writer.append(stat)
+
+    def save(self):
+        output_file = self.input_path[:-4] + '.xlsx'
+        data_writer = []
+        data_map = []
+        data_writer_tmp = []
+        # 写入数据
+        self.write_data(data_writer)
+        # 将data_writer中重复的元素，删除
+        for data in data_writer:
+            if data[0] not in data_map:
+                data_writer_tmp.append(data)
+                data_map.append(data[0])
+        data_writer = data_writer_tmp
+        # 保存并写入数据
+        columns = ['Event Name', 'Avg Event Elapse(ms)', "Outlier", "Outliers FrameID", "Length Outliers", "Max Event Elapse", "Var Event Elapse"]
+        if os.path.exists(output_file):
+            os.remove(output_file)
+        with pd.ExcelWriter(output_file, mode='w', engine='openpyxl') as writer:
+            pd.DataFrame(data_writer, columns=columns).to_excel(writer, index=False)
+
+    def run(self):
+        self.read_opt_content()
+        self.parse()
+        self.read_config()
+        self.get_frames()
+        self.merge_elapse()
+        self.stat_data()
+        self.save()
+
+
+if __name__ == '__main__':
+    directory = input('Please enter file path: ')
+    # 获取该目录下文件列表
+    file_list = []
+    for root, dirs, files in os.walk(directory):
+        for file in files:
+            # 获取文件的完整路径
+            file_path = os.path.join(root, file)
+            # 将文件路径添加到列表中
+            file_list.append(file_path)
+    # 处理所有.opt文件
+    is_work = 0
+    for file in file_list:
+        print(file)
+        if file[-4:] == '.opt':
+            xx = OptEventAvg(file)
+            xx.run()
+            is_work = 1
+    if is_work:
+        print('done!')
+    else:
+        print('failed!')
+    input('Press any key to exit')
+    # msvcrt.getch()

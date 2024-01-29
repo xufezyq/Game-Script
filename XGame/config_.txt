@@ -1,0 +1,40 @@
+int KPlayerClient::Breathe
+void KSO3World::Activate
+void KSO3World::SyncCharacterRepresentData
+int KJX3RepresentEventModule::BackgroundUpdate
+int KJX3RepresentModule::BackgroundUpdate
+KAsyncTaskManager::Tick
+virtual BOOL KResourceLoader::FrameMove
+virtual BOOL KMaterialSystem::FrameMove
+void NSEngine::KStreamingManager::FrameMove
+virtual void K3DScene::FrameMove
+void KPhysicsScene::Simulate
+void K3DScene::PostFrameMove
+virtual BOOL KG3DEngineManager::FrameMoveAllSceneTaniEvent
+void cocos2d::Scheduler::update
+virtual void cocos2d::Node::visit
+ShadowMapRenderPass
+virtual BOOL gfx::KVulkanRenderFrameBuffer::BeginSecondCommandBuffer
+BOOL KRenderVK::_RenderOpaqueSubSetGroup
+BOOL KRenderVK::_RenderOITOpaque
+BOOL KRenderVK::_RenderTerrain
+BOOL KRenderVK::_RenderFoliage
+CopyColorDepthPass
+Water PSSR
+Occlusion cull
+TransparentRenderPass
+PaticleRenderPass
+OITRenderPass
+void KRenderVK::_PostRender
+virtual void CaptionExternalRender::RenderUI
+void KRenderVK::PrepareImguiData
+void cocos2d::Renderer::beginFrame
+void cocos2d::Renderer::renderUI
+void cocos2d::Renderer::endFrame
+VkResult vks::vkWaitForFences
+SwapChainLoadPass
+BOOL KRenderVK::_SubmitSwapChainCommandBuffer
+void gfx::KVulkanCommandBuffer::RefreshPendingState
+virtual void gfx::KGraphicDevice::FrameMove
+virtual BOOL gfx::KVulkanCommandBuffer::Reset
+CPU Frame

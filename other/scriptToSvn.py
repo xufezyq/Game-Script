@@ -1,4 +1,4 @@
-import msvcrt
+import os
 import subprocess
 import sys
 import time
@@ -31,15 +31,25 @@ def svn_cleanup_update(path, fwrite):
 
 
 if __name__ == '__main__':
+    # 获取当前目录
+    repository_path = os.getcwd()
+
+    # 设置输出log文件
     begin_time = datetime.now()
-    # 指定要操作的 SVN 仓库路径
-    repository_path = r'E:\sword3-products\trunk\client'
-    # 指定保存的输出文件路径
-    outfile_name = begin_time.strftime('%Y%m%d-%H%M%S') + '.txt'
-    output_path = rf'E:\log\{outfile_name}'
+    index_last = repository_path.rfind(os.sep)
+    index_first = repository_path.find(os.sep)
+    disk_name = repository_path[:index_first]
+    folder_name = repository_path[index_last + 1:]
+    log_path = rf'{disk_name}\log\{folder_name}'
+    if not os.path.exists(log_path):
+        os.makedirs(log_path)
+    log_name = begin_time.strftime('%Y_%m_%d_%H%M%S') + '.txt'
+    output_path = rf'{log_path}\{log_name}'
+
     # 修改标准输出
     file = open(output_path, 'w')
     sys.stdout = file
+
     # 调用函数执行 cleanup 和 update
     svnRes = False
     while not svnRes:
@@ -47,5 +57,5 @@ if __name__ == '__main__':
         time.sleep(5)
     current_time = datetime.now()
     print(f"完成时间：{current_time}，总计耗时：{current_time - begin_time}")
-    print('done!!!')
+    print(f'{repository_path} is done!!!')
     file.close()

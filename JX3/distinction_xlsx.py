@@ -1,14 +1,18 @@
 import pandas as pd
 
-# 读取两个Excel文件
-df1 = pd.read_excel('屏蔽前.xlsx')
-df2 = pd.read_excel('屏蔽后.xlsx')
+# 读取两个 Excel 文件
+file1 = '烂柯山_5005_屏蔽前.xlsx'  # 改
+file2 = '烂柯山_6758_屏蔽后.xlsx'  # 改
+df1 = pd.read_excel(file1)
+df2 = pd.read_excel(file2)
 
-# 使用merge函数将两个表格合并，设置indicator参数为True以标识每行的来源
-merged_df = df1.merge(df2, on=df1.columns[0], how='outer', indicator=True)
+# 根据某一列的数值查找相同和不同的值
+common_values = pd.merge(df1, df2, on='MeshPath')  # 改
+different_values_in_file1 = df1[~df1['MeshPath'].isin(df2['MeshPath'])]  # 改
+different_values_in_file2 = df2[~df2['MeshPath'].isin(df1['MeshPath'])]  # 改
 
-# 根据来源标识创建新列
-merged_df['source'] = merged_df['_merge'].map({'left_only': 'table1', 'right_only': 'table2', 'both': 'both'})
-
-# 将结果保存到新的Excel文件
-merged_df.to_excel('differences_with_source.xlsx', index=False)
+# 输出到不同的工作簿
+with pd.ExcelWriter('output.xlsx') as writer:
+    common_values.to_excel(writer, sheet_name='Common_Values', index=False)
+    different_values_in_file1.to_excel(writer, sheet_name='Different_Values_in_File1', index=False)
+    different_values_in_file2.to_excel(writer, sheet_name='Different_Values_in_File2', index=False)

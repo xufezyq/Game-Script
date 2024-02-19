@@ -4,6 +4,7 @@ import pandas as pd
 
 from robot import *
 from util import *
+from send_to_mongodb import send_to_mongodb
 from opt_file_parser import OptFileParser
 from scipy.stats import zscore
 from collections import defaultdict
@@ -165,7 +166,8 @@ class OptEventAvg(OptFileParser):
             pd.DataFrame(data_writer, columns=columns).to_excel(writer, index=False)
 
         # 发送数据
-        send_data_robot(self.stat, self.input_dir)
+        # send_data_robot(self.stat, self.input_dir)
+        send_to_mongodb(data_writer, self.input_dir)
 
     def run(self):
         self.read_opt_content()
@@ -177,17 +179,22 @@ class OptEventAvg(OptFileParser):
         self.save()
 
 
+def get_file_path():
+    mylist = []
+    for root, dirs, files in os.walk(directory):
+        for f in files:
+            # 获取文件的完整路径
+            file_path = os.path.join(root, f)
+            # 将文件路径添加到列表中
+            mylist.append(file_path)
+    return mylist
+
+
 if __name__ == '__main__':
     if len(sys.argv) > 1:
         directory = sys.argv[1]
         # 获取该目录下文件列表
-        file_list = []
-        for root, dirs, files in os.walk(directory):
-            for file in files:
-                # 获取文件的完整路径
-                file_path = os.path.join(root, file)
-                # 将文件路径添加到列表中
-                file_list.append(file_path)
+        file_list = get_file_path()
         # 处理所有.opt文件
         for file in file_list:
             if file[-4:] == '.opt':
@@ -195,7 +202,7 @@ if __name__ == '__main__':
                 xx = OptEventAvg(file)
                 xx.run()
         # 创建json数据并发送
-        create_json_data()
+        # create_json_data()
         print('done!')
     else:
         print("arguments wrong number!")

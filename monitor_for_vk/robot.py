@@ -13,9 +13,9 @@ target_event = [
 ]
 global_event_dict = defaultdict(dict)
 # 自己测试
-# global_url = 'https://xz.wps.cn/api/v1/webhook/send?key=7e60aa09abca467e00bcbe0f69ed861d'
+global_url = 'https://xz.wps.cn/api/v1/webhook/send?key=7e60aa09abca467e00bcbe0f69ed861d'
 # 每日监控群
-global_url = 'https://xz.wps.cn/api/v1/webhook/send?key=700f5b7d6ec17818105a95378e4c4caf'
+# global_url = 'https://xz.wps.cn/api/v1/webhook/send?key=700f5b7d6ec17818105a95378e4c4caf'
 
 def send_data_robot(stat_event, input_dir):
     data = []

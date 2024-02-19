@@ -113,29 +113,38 @@ class OptEventAvg(OptFileParser):
                     frame_events_name[event_index], avg_event_elapse, is_outlier, outliers[0], len(outliers[0]), max_event_elapse, var_event_elapse)
                 # print(z_scores)
 
-    def write_data(self, data_writer):
+    def write_data(self):
         """把config标记的函数的提取出来"""
+        extracted_data = []
         if self.config_exists:
-            for event_index, stat in self.stat.items():
-                if stat[1] > 0 and stat[0] in self.target_events:  # avg_event_elapse > 0 且 event_name 存在 target_events
-                    data_writer.append(stat)
+            # target中包含event进行提取
+            for event_index, stat in self.stat.items():  # event_name   avg_event_elapse
+                # if stat[1] > 0 and stat[0] in self.target_events:
+                #     extracted_data.append(stat)
+                function_name = stat[0]
+                for target_name in self.target_events:
+                    if target_name in function_name:
+                        extracted_data.append((target_name, stat[1]))
+
+            # 没有的event默认0
             for event in self.target_events:
-                if event not in data_writer:
-                    data_writer.append((event, 0))
-            # 排序data_writer 根据target.txt的顺序进行排序
-            data_writer.sort(key=lambda x: self.target_events.index(x[0]))
+                if event not in extracted_data:
+                    extracted_data.append((event, 0))
+
+            # 排序extracted_data 根据target.txt的顺序进行排序
+            extracted_data.sort(key=lambda x: self.target_events.index(x[0]))
         else:
             for event_index, stat in self.stat.items():
                 if stat[1] > 0:
-                    data_writer.append(stat)
+                    extracted_data.append(stat)
+        return extracted_data
 
     def save(self):
         output_file = self.input_path[:-4] + '.xlsx'
-        data_writer = []
         data_map = []
         data_writer_tmp = []
         # 写入数据
-        self.write_data(data_writer)
+        data_writer = self.write_data()
         # 将data_writer中重复的元素，删除
         for data in data_writer:
             if data[0] not in data_map:

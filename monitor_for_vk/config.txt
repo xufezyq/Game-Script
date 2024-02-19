@@ -12,7 +12,7 @@ K3DScene::PostFrameMove
 KG3DEngineManager::FrameMoveAllSceneTaniEvent
 cocos2d::Scheduler::update
 cocos2d::Node::visit
-g_GetEventAdaptor.ActiveRL
+g_GetEventAdaptor::ActiveRL
 X3DUI::BeginRenderToScreen
 NSEngine::KIGD_SceneEntry::DoCompute
 ShadowMapRenderPass

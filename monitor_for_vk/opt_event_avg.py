@@ -193,14 +193,17 @@ def get_file_path():
 if __name__ == '__main__':
     if len(sys.argv) > 1:
         directory = sys.argv[1]
+
         # 获取该目录下文件列表
         file_list = get_file_path()
+
         # 处理所有.opt文件
         for file in file_list:
             if file[-4:] == '.opt':
                 print(file)
                 xx = OptEventAvg(file)
                 xx.run()
+
         # 创建json数据并发送
         # create_json_data()
         print('done!')

@@ -28,16 +28,13 @@ def setting_case(input_dir):
 
 def send_to_mongodb(stat_event, input_dir):
     dicc = {
-        "测试机型": "Redmi_K40",
-        "用例": "定点（成都）",
-        "处理器": "高通骁龙870",
-        "内存": "12GB",
-        "date": "2024-02-19",
-        "data": {
-            "KPlayerClient::Breathe": "0.051",
-            "KSO3World::Activate": "0.377"
-        },
-        "CPU Frame": "23.3"
+        "测试机型": "",
+        "用例": "",
+        "处理器": "",
+        "内存": "",
+        "date": "",
+        "data": {},
+        "CPU Frame": ""
     }
     myclient = pymongo.MongoClient("mongodb://10.11.80.122:27017/")
     mydb = myclient["vkengine"]
@@ -45,7 +42,8 @@ def send_to_mongodb(stat_event, input_dir):
 
     data = {}
     for event in stat_event:
-        data[event[0]] = str(event[1])
+        event_key = event[0].replace('.', '::')
+        data[event_key] = str(event[1])
 
     dicc['测试机型'] = setting_devices(input_dir)
     dicc['用例'] = setting_case(input_dir)
@@ -55,5 +53,6 @@ def send_to_mongodb(stat_event, input_dir):
     dicc['data'] = data
     dicc['CPU Frame'] = str(stat_event[-1][1])
 
+    # print(dicc)
     x = mycol.insert_one(dicc)
     print(x)

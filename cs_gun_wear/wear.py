@@ -1,39 +1,55 @@
 from itertools import combinations
+import numpy as np
 
 
-def calculate_result(max_value, min_value, selected_numbers):
-    avg_value = sum(selected_numbers) / len(selected_numbers)
-    result = ((max_value - min_value) * avg_value) + min_value
-    return result
+class Calculator:
+    def __init__(self, filename):
+        self.filename = filename
+        self.max_val = None
+        self.min_val = None
+        self.input_numbers = []
+        self.target_result = None
+        self.running_count = 0
+
+    def read_input(self):
+        with open(self.filename, 'r') as file:
+            lines = file.readlines()
+            self.max_val = float(lines[0].strip())
+            self.min_val = float(lines[1].strip())
+            self.input_numbers = [float(x.strip()) for x in lines[2:-1]]
+            self.target_result = float(lines[-1].strip())
+        print(self.input_numbers)
+        print(self.target_result)
+
+    def calculate_result(self, selected_numbers):
+        avg_value = sum(selected_numbers) / len(selected_numbers)
+        return ((self.max_val - self.min_val) * avg_value) + self.min_val
+
+    def generate_combinations(self, r):
+        for combo in combinations(self.input_numbers, r):
+            yield combo
+
+    def find_best_combination(self):
+        best_combination = None
+        best_wear = None
+        best_difference = float('inf')
+
+        for combo in self.generate_combinations(10):
+            output = self.calculate_result(combo)
+            difference = abs(output - self.target_result)
+            if difference < best_difference:
+                best_difference = difference
+                best_combination = combo
+                best_wear = output
+            self.running_count += 1
+            if self.running_count % 10000 == 0:
+                print(self.running_count, '/', '10')
+
+        print("最接近目标结果的组合为:", best_combination)
+        print("结果为:", best_wear)
 
 
-# 从txt文件中读取数据
-with open('input.txt', 'r') as file:
-    lines = file.readlines()
-    max_val = float(lines[0].strip())
-    min_val = float(lines[1].strip())
-    input_numbers = [float(x.strip()) for x in lines[2:]]
-    target_result = float(lines[-1].strip())
-
-# 从输入数字中选择任意10个数字的组合
-number_combinations = list(combinations(input_numbers, 10))
-
-running_count = 0
-best_combination = None
-best_wear = None
-best_difference = float('inf')
-
-# 针对每个组合计算结果并找到最接近目标结果的组合
-for combo in number_combinations:
-    output = calculate_result(max_val, min_val, combo)
-    difference = abs(output - target_result)
-    if difference < best_difference:
-        best_difference = difference
-        best_combination = combo
-        best_wear = output
-    running_count += 1
-    if running_count % 10000 == 0:
-        print(running_count, '/', len(number_combinations))
-
-print("最接近目标结果的组合为:", best_combination)
-print("结果为:", best_wear)
+if __name__ == "__main__":
+    calculator = Calculator('input.txt')
+    calculator.read_input()
+    calculator.find_best_combination()

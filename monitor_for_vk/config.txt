@@ -41,3 +41,9 @@ vks::vkQueuePresentKHR
 gfx::KGraphicDevice::FrameMove
 FrameWaitTimer
 CPU Frame
+KJX3LogicModule::Update
+KEngineCore::FrameMove
+cocos2d::KMUI::Tick
+KSO3UI::BeginPaint
+KG3DScene::RenderToScreen
+cocos2d::KMUI::PaintUI

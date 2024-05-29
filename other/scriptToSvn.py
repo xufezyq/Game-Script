@@ -31,31 +31,37 @@ def svn_cleanup_update(path, fwrite):
 
 
 if __name__ == '__main__':
+    # 从SvnPath.txt读取需要更新的文件
+    svn_path_list = []
+    with open('SvnPath.txt', 'r') as file:
+        for line in file:
+            svn_path_list.append(line.strip())
+
     # 获取当前目录
-    repository_path = os.getcwd()
+    # repository_path = os.getcwd()
+    for repository_path in svn_path_list:
+        # 设置输出log文件
+        begin_time = datetime.now()
+        index_last = repository_path.rfind(os.sep)
+        index_first = repository_path.find(os.sep)
+        disk_name = repository_path[:index_first]
+        folder_name = repository_path[index_last + 1:]
+        log_path = rf'{disk_name}\log\{folder_name}'
+        if not os.path.exists(log_path):
+            os.makedirs(log_path)
+        log_name = begin_time.strftime('%Y_%m_%d_%H%M%S') + '.txt'
+        output_path = rf'{log_path}\{log_name}'
 
-    # 设置输出log文件
-    begin_time = datetime.now()
-    index_last = repository_path.rfind(os.sep)
-    index_first = repository_path.find(os.sep)
-    disk_name = repository_path[:index_first]
-    folder_name = repository_path[index_last + 1:]
-    log_path = rf'{disk_name}\log\{folder_name}'
-    if not os.path.exists(log_path):
-        os.makedirs(log_path)
-    log_name = begin_time.strftime('%Y_%m_%d_%H%M%S') + '.txt'
-    output_path = rf'{log_path}\{log_name}'
+        # 修改标准输出
+        file = open(output_path, 'w')
+        sys.stdout = file
 
-    # 修改标准输出
-    file = open(output_path, 'w')
-    sys.stdout = file
-
-    # 调用函数执行 cleanup 和 update
-    svnRes = False
-    while not svnRes:
-        svnRes = svn_cleanup_update(repository_path, file)
-        time.sleep(5)
-    current_time = datetime.now()
-    print(f"完成时间：{current_time}，总计耗时：{current_time - begin_time}")
-    print(f'{repository_path} is done!!!')
-    file.close()
+        # 调用函数执行 cleanup 和 update
+        svnRes = False
+        while not svnRes:
+            svnRes = svn_cleanup_update(repository_path, file)
+            time.sleep(5)
+        current_time = datetime.now()
+        print(f"完成时间：{current_time}，总计耗时：{current_time - begin_time}")
+        print(f'{repository_path} is done!!!')
+        file.close()

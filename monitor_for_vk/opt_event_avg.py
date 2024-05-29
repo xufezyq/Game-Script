@@ -167,7 +167,7 @@ class OptEventAvg(OptFileParser):
 
         # 发送数据
         # send_data_robot(self.stat, self.input_dir)
-        send_to_mongodb(data_writer, self.input_dir)
+        # send_to_mongodb(data_writer, self.input_dir)
 
     def run(self):
         self.read_opt_content()
@@ -191,21 +191,23 @@ def get_file_path():
 
 
 if __name__ == '__main__':
+    '''
     if len(sys.argv) > 1:
         directory = sys.argv[1]
+    '''
+    directory = input("Please enter the path: ")
+    # 获取该目录下文件列表
+    file_list = get_file_path()
 
-        # 获取该目录下文件列表
-        file_list = get_file_path()
+    # 处理所有.opt文件
+    for file in file_list:
+        if file[-4:] == '.opt':
+            print(file)
+            xx = OptEventAvg(file)
+            xx.run()
 
-        # 处理所有.opt文件
-        for file in file_list:
-            if file[-4:] == '.opt':
-                print(file)
-                xx = OptEventAvg(file)
-                xx.run()
-
-        # 创建json数据并发送
-        # create_json_data()
-        print('done!')
-    else:
-        print("arguments wrong number!")
+    # 创建json数据并发送
+    # create_json_data()
+    print('done!')
+else:
+    print("arguments wrong number!")

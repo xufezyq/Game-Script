@@ -12,10 +12,11 @@ K3DScene::PostFrameMove
 KG3DEngineManager::FrameMoveAllSceneTaniEvent
 cocos2d::Scheduler::update
 cocos2d::Node::visit
-g_GetEventAdaptor::ActiveRL
+g_GetEventAdaptor.ActiveRL
 X3DUI::BeginRenderToScreen
 NSEngine::KIGD_SceneEntry::DoCompute
 ShadowMapRenderPass
+BackTerrainPass
 gfx::KVulkanRenderFrameBuffer::BeginSecondCommandBuffer
 KRenderVK::_RenderOpaqueSubSetGroup
 KRenderVK::_RenderOITOpaque
@@ -27,12 +28,13 @@ RenderSceneSkyBox
 CopyColorDepthPass
 ReflectionRenderPass
 TransparentRenderPass
-PaticleRenderPass
+ParticleRenderPass
 OITRenderPass
 KRenderVK::_PostRender
 CaptionExternalRender::RenderUI
 KRenderVK::PrepareImguiData
 SwapChainClearPass
+KJX3RenderModule::Enter3DRoutine
 cocos2d::Renderer::beginFrame
 cocos2d::Renderer::renderUI
 cocos2d::Renderer::endFrame
@@ -41,9 +43,3 @@ vks::vkQueuePresentKHR
 gfx::KGraphicDevice::FrameMove
 FrameWaitTimer
 CPU Frame
-KJX3LogicModule::Update
-KEngineCore::FrameMove
-cocos2d::KMUI::Tick
-KSO3UI::BeginPaint
-KG3DScene::RenderToScreen
-cocos2d::KMUI::PaintUI

@@ -36,12 +36,18 @@ def send_to_mongodb(stat_event, input_dir):
         "data": {},
         "CPU Frame": ""
     }
-    myclient = pymongo.MongoClient("mongodb://10.11.80.122:27017/")
+    host = "10.11.80.122"
+    port = 27017
+    username = "admin"
+    password = "chDjJeUrlLspJiK8yut"
+    myclient = pymongo.MongoClient(f"mongodb://{username}:{password}@{host}:{port}")
     mydb = myclient["vkengine"]
+    # mydb.authenticate(username, password)
     mycol = mydb["engine_monitor"]
 
     data = {}
     for event in stat_event:
+        # . 替换为 :: ，数据库无法输入
         event_key = event[0].replace('.', '::')
         data[event_key] = str(event[1])
 
